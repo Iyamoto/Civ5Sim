@@ -7,7 +7,7 @@ def simulate(maxturns=10):
     #Initial state
     Food = 0   
     Production = 0
-    Gold = random.randint(3,5)
+    Gold = 0
     Culture = 1
     Science = 4
     Units = 0
@@ -16,31 +16,43 @@ def simulate(maxturns=10):
 
     #Modifiers
     dCulture = 1
-    dGold = 3
-    dFood = random.randint(2,4)
-    dProduction = random.randint(4,6)
+    CityScience = 3
+    CityGold = 3
+    CityFood = random.randint(2,4)
+    CityProduction = random.randint(3,5)
 
     #Let the game begin
-    for turn in range(1,maxturns):
-        print("Turn:", turn)
-        printState(Citizens, Food, Production, Gold, Culture, Science)
+    for turn in range(2,maxturns):
+        #print("Turn:", turn)
+        #printState(Citizens, Food, Production, Gold, Culture, Science)
         #Culture
         Culture += dCulture
         #Gold
-        Gold = Gold + dGold - getUnitMaintenance(turn, Units)
+        Gold = Gold + CityGold - getUnitMaintenance(turn, Units)
         #Science
-        Science = Science + Citizens
+        Science = Science + CityScience + Citizens
         #Production
-        Production = Production + dProduction + (Citizens-1)*2
+        CitizenProduction = 0
+        for n in range(1,Citizens):
+            CitizenProduction = CitizenProduction + random.randint(1,3)
+        Production = Production + CityProduction + CitizenProduction
         #print(getTechCost(Cities))
         #Food
-        #TODO Add random food for every citizen
-        Food = Food + dFood + (Citizens-1)*2
+        CitizenFood = 0
+        for n in range(1,Citizens):
+            CitizenFood = CitizenFood + random.randint(1,3)
+        Food = Food + CityFood + CitizenFood - Citizens*2
         if Food>=getFoodCost(Citizens):
             Food-=getFoodCost(Citizens)
             Citizens+=1
         
-        #units = 1
+        if Production>=37:
+            return turn
+
+##        if Science>=55:
+##            return turn
+
+    return turn
 
 def getTechCost(cities):
     base = 55
