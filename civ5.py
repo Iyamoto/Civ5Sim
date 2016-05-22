@@ -1,9 +1,20 @@
 #Main class lib
+#http://civilization.wikia.com/wiki/Game_concepts_%28Civ5%29
+#http://civilization.wikia.com/wiki/Mathematics_of_Civilization_V
 
 import random
 import math
 
-def simulate(maxturns=10):
+def multisim(maxturns=50, runs = 1000, target='Production', value=37):
+    data = []
+    for i in range(runs):
+        data.append(simulate(maxturns, target, value))
+
+    mean = round(sum(data)/float(len(data)),2)
+    dev = round(stdDev(data),2)
+    return(target, value, mean, dev)
+
+def simulate(maxturns=10, target='Production', value=37):
     #Initial state
     Food = 0   
     Production = 0
@@ -18,13 +29,17 @@ def simulate(maxturns=10):
     dCulture = 1
     CityScience = 3
     CityGold = 3
-    CityFood = random.randint(2,4)
+    CityFood = random.randint(1,4)
     CityProduction = random.randint(3,5)
 
     #Let the game begin
     for turn in range(2,maxturns):
-        #print("Turn:", turn)
-        #printState(Citizens, Food, Production, Gold, Culture, Science)
+        d = {'Production': Production, 'Science': Science, 'Citizens': Citizens }      
+        if d[target]>=value:
+            return turn
+        
+##        print("Turn:", turn)
+##        printState(Citizens, Food, Production, Gold, Culture, Science)
         #Culture
         Culture += dCulture
         #Gold
@@ -33,26 +48,29 @@ def simulate(maxturns=10):
         Science = Science + CityScience + Citizens
         #Production
         CitizenProduction = 0
-        for n in range(1,Citizens):
+        for n in range(Citizens):
             CitizenProduction = CitizenProduction + random.randint(1,3)
         Production = Production + CityProduction + CitizenProduction
         #print(getTechCost(Cities))
         #Food
         CitizenFood = 0
-        for n in range(1,Citizens):
+        for n in range(Citizens):
             CitizenFood = CitizenFood + random.randint(1,3)
         Food = Food + CityFood + CitizenFood - Citizens*2
         if Food>=getFoodCost(Citizens):
             Food-=getFoodCost(Citizens)
             Citizens+=1
-        
-        if Production>=37:
-            return turn
 
-##        if Science>=55:
-##            return turn
+
 
     return turn
+
+def stdDev(X):
+    mean = sum(X)/float(len(X))
+    tot = 0.0
+    for x in X:
+        tot += (x - mean)**2
+    return (tot/len(X))**0.5
 
 def getTechCost(cities):
     base = 55

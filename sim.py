@@ -1,12 +1,4 @@
 import civ5
-import math
-
-def stdDev(X):
-    mean = sum(X)/float(len(X))
-    tot = 0.0
-    for x in X:
-        tot += (x - mean)**2
-    return (tot/len(X))**0.5
 
 units = []
 
@@ -22,11 +14,9 @@ buildings.append(civ5.building('Monument', 40, 1, (0,0,0,2,0)))
 ##print(units[0])
 ##print(buildings[0].getTraits())
 
-runs = 10000
-data = []
-for i in range(runs-1):
-    data.append(civ5.simulate(50))
+print(civ5.multisim(50, 1000, 'Production', 37))
+print(civ5.multisim(50, 1000, 'Science', 55))
+print(civ5.multisim(50, 1000, 'Citizens', 2))
+print(civ5.multisim(50, 1000, 'Citizens', 3))
+print(civ5.multisim(50, 1000, 'Citizens', 4))
 
-mean = round(sum(data)/float(len(data)),2)
-dev = round(stdDev(data),2)
-print(mean, dev)
