@@ -5,16 +5,35 @@
 import random
 import math
 
-def multisim(maxturns=50, runs = 1000, target='Production', value=37):
+starts = {}    
+starts['Desert'] = (0,3,3,0,3)
+starts['Grassland'] = (2,3,3,0,3)
+starts['Hill'] = (0,5,3,0,3)
+starts['Plains'] = (1,4,3,0,3)
+starts['Tundra'] = (1,3,3,0,3)
+starts['Forest'] = (1,4,3,0,3)
+starts['Jungle'] = (2,3,3,0,3)
+
+def checksim(target='Production', value=37, goodmean=8.5):
+    t, v, mean, dev = multisim(50, 1000, target, value)
+    if abs(mean-goodmean)<0.05*goodmean:
+        print(target, goodmean, mean, '- OK')
+        return True
+    else:
+        print(target, goodmean, mean, '- Bad', )
+        return False
+
+def multisim(maxturns=50, runs = 1000, target='Production', value=37, city=(0,0,0,0,0)):
     data = []
     for i in range(runs):
-        data.append(simulate(maxturns, target, value))
+        data.append(simulate(maxturns, target, value, city))
 
     mean = round(sum(data)/float(len(data)),2)
     dev = round(stdDev(data),2)
     return(target, value, mean, dev)
 
-def simulate(maxturns=10, target='Production', value=37):
+def simulate(maxturns=10, target='Production', value=37, city=(0,0,0,0,0)):
+    """ City (food, production, gold, culture, science) """
     #Initial state
     Food = 0   
     Production = 0
@@ -27,10 +46,15 @@ def simulate(maxturns=10, target='Production', value=37):
 
     #Modifiers
     dCulture = 1
-    CityScience = 3
-    CityGold = 3
-    CityFood = random.randint(1,4)
-    CityProduction = random.randint(3,5)
+
+    if sum(city)==0:
+        CityScience = 3
+        CityGold = 3
+        CityFood = random.randint(1,4)
+        CityProduction = random.randint(3,5)
+        CityCulture = 0
+    else:
+        CityFood, CityProduction, CityGold, CityCulture, CityScience = city
 
     #Let the game begin
     for turn in range(2,maxturns):
@@ -41,7 +65,7 @@ def simulate(maxturns=10, target='Production', value=37):
 ##        print("Turn:", turn)
 ##        printState(Citizens, Food, Production, Gold, Culture, Science)
         #Culture
-        Culture += dCulture
+        Culture = Culture + CityCulture + dCulture
         #Gold
         Gold = Gold + CityGold - getUnitMaintenance(turn, Units)
         #Science
