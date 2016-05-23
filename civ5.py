@@ -6,12 +6,12 @@ import random
 import math
 
 starts = {}    
-starts['Desert'] = (0,3,3,0,3)
-starts['Grassland'] = (2,3,3,0,3)
-starts['Hill'] = (0,5,3,0,3)
-starts['Plains'] = (1,4,3,0,3)
-starts['Tundra'] = (1,3,3,0,3)
-starts['Forest'] = (1,4,3,0,3)
+starts['Desert'] = (2,4,3,0,3)
+starts['Grassland'] = (2,4,3,0,3)
+starts['Hill'] = (2,5,3,0,3)
+starts['Plains'] = (2,4,3,0,3)
+starts['Tundra'] = (2,4,3,0,3)
+starts['Forest'] = (2,4,3,0,3)
 starts['Jungle'] = (2,3,3,0,3)
 
 def checksim(target='Production', value=37, goodmean=8.5):
@@ -38,48 +38,69 @@ def simulate(maxturns=10, target='Production', value=37, city=(0,0,0,0,0)):
     Food = 0   
     Production = 0
     Gold = 0
-    Culture = 1
-    Science = 4
-    Units = 0
+    Culture = 0
+    Science = 0
+    Units = 1
     Citizens = 1
     Cities = 1
 
     #Modifiers
     dCulture = 1
 
+    #City hex
     if sum(city)==0:
         CityScience = 3
         CityGold = 3
-        CityFood = random.randint(1,4)
-        CityProduction = random.randint(3,5)
+        CityFood = 2
+        CityProduction = random.randint(4,5)
         CityCulture = 0
     else:
         CityFood, CityProduction, CityGold, CityCulture, CityScience = city
 
+    #Fill Hexes
+    Hex = {}
+    Max = 4
+    for i in range(10):
+        Hex[i,'Food'] = random.randint(1,3)
+        Max = Max - Hex[i,'Food']
+        if Max<1:
+            Hex[i,'Production']=0
+            Hex[i,'Gold'] = 0
+        else:
+            Hex[i,'Production'] = random.randint(0,Max)
+            Max = Max - Hex[i,'Production']
+            if Max<1:
+                Hex[i,'Gold'] = 0
+            else:
+                Hex[i,'Gold'] = random.randint(0,Max)
+
     #Let the game begin
-    for turn in range(2,maxturns):
+    for turn in range(1,maxturns):
         d = {'Production': Production, 'Science': Science, 'Citizens': Citizens }      
         if d[target]>=value:
-            return turn
+            return turn-1
         
 ##        print("Turn:", turn)
 ##        printState(Citizens, Food, Production, Gold, Culture, Science)
         #Culture
         Culture = Culture + CityCulture + dCulture
         #Gold
-        Gold = Gold + CityGold - getUnitMaintenance(turn, Units)
+        CitizenGold = 0
+        for n in range(Citizens):
+            CitizenGold = CitizenGold + Hex[n,'Gold']
+        Gold = Gold + CityGold +CitizenGold - getUnitMaintenance(turn, Units)
         #Science
         Science = Science + CityScience + Citizens
         #Production
         CitizenProduction = 0
         for n in range(Citizens):
-            CitizenProduction = CitizenProduction + random.randint(1,3)
+            CitizenProduction = CitizenProduction + Hex[n,'Production']
         Production = Production + CityProduction + CitizenProduction
         #print(getTechCost(Cities))
         #Food
         CitizenFood = 0
         for n in range(Citizens):
-            CitizenFood = CitizenFood + random.randint(1,3)
+            CitizenFood = CitizenFood + Hex[n,'Food']
         Food = Food + CityFood + CitizenFood - Citizens*2
         if Food>=getFoodCost(Citizens):
             Food-=getFoodCost(Citizens)
